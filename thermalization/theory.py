@@ -32,6 +32,50 @@ def powerbobbin(deltaT,    # > 0
                           insthick, layerspace)**(-1) for n in ns ]);
     return UtotA * deltaT;
 
+def maketable(mat, deltaTs, lengths, diameters):
+    table = [];
+    for d in diameters:
+        row = [];
+        for l in lengths:
+            row.append( 
+            ( powerlength(deltaTs[0], l, larger(mat[0], mat[1]), d), 
+              powerlength(deltaTs[1], l, larger(mat[1], mat[2]), d) 
+            )
+            )
+        table.append(row);
+    return table;
+
+
+def table():
+    cu = [400, 600, 300]; # all of these are in W/ (m K)
+    pb = [50, 20, 1];
+    cn = [11, 10, 0.4];
+
+    allmaterials = [cu, pb, cn];
+    matnames     = ['copper', 'phosphor bronze', 'constantan'];
+    deltaTs = [300-60, 60-4];
+
+    lengths = [1, .5, .2, .1, .05, .01];    # in m
+
+    gauges = [30, 32, 34, 36, 38, 40];      # in AWG
+
+    diameters = [.127e-3 * 92**((36-n)/39) for n in gauges]; #in m
+
+    for mat in range(len(matnames)):
+        print('');
+        print(matnames[mat] + '  ' + str(lengths));
+        table = maketable(allmaterials[mat], deltaTs, lengths, diameters);
+        for r in range(len(table)):
+            row = '| {:2.2f} AWG '.format(gauges[r]);
+            for l in table[r]:
+                row = row + '| {:2.4f} mW '.format(l[1]*1e3);
+            row = row + '|'
+            print(row);
+
+
+def larger (a,  b):
+    return a if a>b else b;
+
 def powerlength(deltaT,    # > 0
                  wirelen,
                  k_wire = 21, #thermal conductivity of wire in W/(m K)
@@ -103,3 +147,7 @@ def run():
     plt.ylabel('Max Possible Power Transfer(mW)');
     fig.savefig('powertransver_vs_wirelen_forbobbins.pdf',
                 bbox_inches='tight');
+
+if __name__ == '__main__':
+    table();
+
